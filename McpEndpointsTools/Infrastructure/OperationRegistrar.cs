@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using McpEndpointsTools.Attributes;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.DependencyInjection;
@@ -78,18 +79,28 @@ public class OperationRegistrar
 
         foreach (var ctrlType in controllers)
         {
+            // Skip ignored controllers and controllers with no HTTP attribute
+            if (ctrlType.GetCustomAttribute<McpIgnoreAttribute>() != null ||
+                ctrlType.GetCustomAttribute<AuthorizeAttribute>() != null)
+                continue;
+
+            // Get route template
             var classRoute = ctrlType.Name.Replace("Controller", "") ?? ctrlType
-                                 .GetCustomAttribute<RouteAttribute>()?
-                                 .Template;
-            
+                .GetCustomAttribute<RouteAttribute>()?
+                .Template;
+
+            // Create instance
             var instance = ActivatorUtilities.CreateInstance(_sp, ctrlType);
 
+            // Get methods
             var methods = ctrlType
                 .GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
 
             foreach (var method in methods)
             {
-                if (method.GetCustomAttribute<McpIgnoreAttribute>() != null)
+                // Skip ignored methods and methods with no HTTP attribute
+                if (method.GetCustomAttribute<McpIgnoreAttribute>() != null ||
+                    method.GetCustomAttribute<AuthorizeAttribute>() != null)
                     continue;
 
                 var http = method.GetCustomAttributes()
@@ -97,21 +108,22 @@ public class OperationRegistrar
                     .FirstOrDefault();
                 if (http == null)
                     continue;
-                
+
                 var methodRoute = http.Template ?? string.Empty;
-                
+
                 var xmlName = XmlCommentsNameHelper.GetMemberNameForMethod(method);
-                
+
                 var desc = _xml.GetSummary(xmlName) ?? "";
 
                 var controllerPart = ctrlType.Name
                     .Replace("Controller", "", StringComparison.Ordinal)
                     .ToLowerInvariant();
                 
-                var methodPart = method.Name.ToLowerInvariant();
 
-                var toolName = $"{controllerPart}-{methodPart}";
-                
+                // Get tool name
+                var toolName = $"{controllerPart}-{method.Name.ToLowerInvariant()}";
+
+                // Create tool
                 var opts = new McpServerToolCreateOptions
                 {
                     Name = toolName,
@@ -120,20 +132,22 @@ public class OperationRegistrar
                 };
 
                 var tool = McpServerTool.Create(method, instance, opts);
-                
+
 
                 _tools.Add(tool);
 
+                // Create resource
                 if (classRoute != null)
                 {
                     var routeTemplate = string.Join("/",
                         new[] { classRoute.Trim('/'), methodRoute.Trim('/') }
                             .Where(p => !string.IsNullOrEmpty(p))
                     );
-                
-                    var absolute = string.IsNullOrEmpty(routeTemplate) ? $"{_basePath}"
+
+                    var absolute = string.IsNullOrEmpty(routeTemplate)
+                        ? $"{_basePath}"
                         : $"{_basePath}/{routeTemplate}";
-                    
+
                     var resOpts = new McpServerResourceCreateOptions
                     {
                         UriTemplate = absolute,
@@ -141,7 +155,7 @@ public class OperationRegistrar
                         Description = desc,
                         MimeType = "application/json",
                     };
-                    
+
                     _resources.Add(McpServerResource.Create(method, instance, resOpts));
                 }
             }

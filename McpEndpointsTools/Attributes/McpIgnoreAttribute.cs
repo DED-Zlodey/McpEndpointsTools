@@ -1,12 +1,19 @@
 ﻿namespace McpEndpointsTools.Attributes;
 
 /// <summary>
-/// Indicates that the marked method should be ignored for certain processes or functionality.
+/// An attribute that can be applied to classes or methods to mark them for exclusion
+/// from specific processing pipelines or tools.
 /// </summary>
 /// <remarks>
-/// This attribute can be applied to methods to exclude them from specific operations or processing logic.
+/// This attribute is typically used to indicate that the associated class or
+/// method should be ignored by automated systems such as endpoint scanners
+/// or registration mechanisms.
 /// </remarks>
-[AttributeUsage(AttributeTargets.Method)]
+/// <example>
+/// This attribute can be applied to a controller or an action method
+/// to prevent it from being registered or processed in certain scenarios.
+/// </example>
+[AttributeUsage(AttributeTargets.Method | AttributeTargets.Class)]
 public class McpIgnoreAttribute : Attribute
 {
 }

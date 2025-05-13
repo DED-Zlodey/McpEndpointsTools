@@ -6,12 +6,11 @@
 public class ServerOptions
 {
     /// <summary>
-    /// Gets or sets the endpoint path for the MCP pipeline.
-    /// This property defines the base URL path for MCP-related endpoints in the application,
-    /// such as for HTTP streaming or Server-Sent Events (SSE).
-    /// Default value is "/mcp".
+    /// Gets or sets the MCP endpoint used for server routing.
+    /// This property defines the base path for MCP-related endpoints in the application.
+    /// The default value is "/mcp".
     /// </summary>
-    public string PipelineEndpoint { get; set; } = "/mcp";
+    public string McpEndpoint { get; set; } = "/mcp";
 
     /// <summary>
     /// Gets or sets the name of the server.
