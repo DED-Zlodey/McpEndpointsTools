@@ -1,0 +1,23 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{7057C937-A42D-415C-A6BF-D034ED0E0DAE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "examples", "examples", "{8DFD9F49-49DC-4CDC-80D2-18A891D729AF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "McpEndpointsTools", "McpEndpointsTools\McpEndpointsTools.csproj", "{B48C7128-3670-46FD-9980-FB8B5FC61076}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{B48C7128-3670-46FD-9980-FB8B5FC61076} = {7057C937-A42D-415C-A6BF-D034ED0E0DAE}
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B48C7128-3670-46FD-9980-FB8B5FC61076}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B48C7128-3670-46FD-9980-FB8B5FC61076}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B48C7128-3670-46FD-9980-FB8B5FC61076}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B48C7128-3670-46FD-9980-FB8B5FC61076}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
