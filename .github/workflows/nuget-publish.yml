@@ -3,7 +3,7 @@ name: Publish NuGet Package
 on:
   push:
     tags:
-      - 'v*.*.*-*'  # например v1.0.0-alpha
+      - 'v*.*.*-*'
 
 jobs:
   publish:
@@ -19,22 +19,22 @@ jobs:
       - name: Restore & Build
         run: dotnet build McpEndpointsTools.sln --configuration Release
 
-      - name: Pack Library
+      - name: Pack
         run: |
-          echo "Упаковываем McpEndpointsTools..."
+          echo "Пакуем McpEndpointsTools.csproj → ./nupkg"
           dotnet pack McpEndpointsTools/McpEndpointsTools.csproj \
             --configuration Release \
             --no-build \
             --output ./nupkg
 
-      - name: List .nupkg files
+      - name: Show .nupkg
         run: ls -lh nupkg/*.nupkg
 
       - name: Publish to NuGet
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
         run: |
-          echo "Публикуем пакет на NuGet.org"
           dotnet nuget push nupkg/*.nupkg \
             --api-key $NUGET_API_KEY \
             --source https://api.nuget.org/v3/index.json
+
