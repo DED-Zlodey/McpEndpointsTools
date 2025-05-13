@@ -2,7 +2,9 @@
 
 namespace McpEndpointsTools.Infrastructure;
 
+/// <summary>
 /// Provides functionality to extract XML documentation comments for members from a specified XML documentation file.
+/// </summary>
 public class XmlCommentsProvider
 {
     /// <summary>

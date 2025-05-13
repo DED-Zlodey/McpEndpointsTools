@@ -57,7 +57,7 @@ public static class McpServiceCollectionExtensions
             })
             .WithTools(registrar.GetTools())
             .WithResources(registrar.GetResources())
-            .WithListResourcesHandler((ctx, ct) =>
+            .WithListResourcesHandler((ctx, _) =>
             {
                 if (ctx.Services != null)
                 {
