@@ -49,7 +49,7 @@ solution/
    // MCP Server registration and controller scanning
    builder.Services.AddMcpEndpointsServer(opts =>
    {
-   opts.PipelineEndpoint = "/mcp"; // path for the HTTP pipeline
+          opts.PipelineEndpoint = "/mcp"; // path for the HTTP pipeline
           opts.ServerName = "My MCP Server"; // server name
           opts.ServerDescription = "API for MCP"; // description
           opts.ServerVersion = "1.2.3"; // version
