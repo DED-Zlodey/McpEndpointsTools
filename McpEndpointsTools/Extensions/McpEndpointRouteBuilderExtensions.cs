@@ -27,7 +27,7 @@ public static class McpEndpointRouteBuilderExtensions
             .GetRequiredService<IOptions<ServerOptions>>()
             .Value;
         
-        endpoints.MapMcp(opts.PipelineEndpoint);
+        endpoints.MapMcp(opts.McpEndpoint);
 
         return endpoints;
     }
