@@ -1,81 +1,81 @@
 # MCP Endpoints Tools
 
-Библиотека для ASP.NET Core Web API, автоматически превращающая каждый метод контроллера в инструмент и ресурс для MCP-сервера.
+Library for ASP.NET Core Web API, which automatically turns each controller method into a tool and resource for the MCP server.
 
-Под капотом MCP Endpoints Tools использует [Model Context Protocol C# SDK](https://github.com/modelcontextprotocol/csharp-sdk "Model Context Protocol C# SDK") для работы с инструментами и ресурсами.
+Under the hood, MCP Endpoints Tools uses the [Model Context Protocol C# SDK](https://github.com/modelcontextprotocol/csharp-sdk "Model Context Protocol C# SDK") for working with tools and resources.
 
-## Описание
+## Description
 
-MCP Endpoints Server сканирует сборку приложения, находит все контроллеры и их публичные методы, аннотированные HTTP-атрибутами, и регистрирует их как инструменты (tools) и ресурсы (resources) в Model Context Protocol (MCP) сервере. При этом используется XML-комментарии из сборки для заполнения описания (summary) инструментов и ресурсов.
+The MCP Endpoints Server scans the application build, finds all controllers and their public methods annotated with HTTP attributes, and registers them as tools and resources on the Model Context Protocol (MCP) server. In this case, XML comments from the assembly are used to fill in the description (summary) of tools and resources.
 
-## Возможности
+## Features
 
-* Автоматическая регистрация всех контроллерных методов как MCP-инструментов и ресурсов
-* Поддержка исключения методов через атрибут `[McpIgnore]`
-* Загрузка описаний из XML-комментариев сборки через `XmlCommentsProvider`
-* Гибкая настройка через `ServerOptions` (путь, имя, описание, версия, путь к XML)
-* Простая интеграция в `IServiceCollection` и `IEndpointRouteBuilder` через расширения `ServiceCollectionExtensions` и `EndpointRouteBuilderExtensions`
+* Automatic registration of all controller methods as MCP tools and resources
+* Support for method exclusion via the `[McpIgnore]` attribute
+* Loading descriptions from XML comments of an assembly via the 'XmlCommentsProvider`
+* Flexible configuration via `ServerOptions` (path, name, description, version, XML path)
+* Easy integration into 'IServiceCollection` and `IEndpointRouteBuilder' via extensions `ServiceCollectionExtensions` and `EndpointRouteBuilderExtensions`
 
-## Структура репозитория
+## Repository structure
 
 ```plaintext
 solution/
 ├── src/
-│   └── McpEndpointsTools/        # исходники библиотеки
-│       ├── Extensions/           # расширения для IServiceCollection и IEndpointRouteBuilder
+│   └── McpEndpointsTools/        # library sources
+│       ├── Extensions/           # extensions for IServiceCollection and IEndpointRouteBuilder
 │       ├── Attributes/           # McpIgnoreAttribute
-│       ├── Providers/            # XmlCommentsProvider и XmlCommentsNameHelper
-│       └── Options/              # конфигурация
-├── examples/                     # примеры использования
-│   └── SampleApp/                # пример ASP.NET Core Web Api приложения
+│       ├── Providers/            # XmlCommentsProvider and XmlCommentsNameHelper
+│       └── Options/              # configuration
+├── examples/                     # usage examples
+,── SampleApp/ # example ASP.NET Core Web Api of the application
 └── README.md                     
 ```
 
-## Установка
+## Installation
 
-1. Добавьте проект `McpEndpointsTools` в ваше решение или подключите через NuGet (при наличии пакета):
+1. Add the `McpEndpointsTools` project to your solution or connect via NuGet (if there is a package):
 
    ```bash
    dotnet add package McpEndpointsServer
    ```
 
-2. В файле `Program.cs` (или `Startup.cs`) зарегистрируйте сервисы и маппинг:
+2. In the file `Program.cs` (or `Startup.cs`), register the services and mapping:
 
    ```csharp
    using McpEndpointsServer.Extensions;
 
    var builder = WebApplication.CreateBuilder(args);
 
-   // Регистрация MCP-сервера и сканирование контроллеров
+   // MCP Server registration and controller scanning
    builder.Services.AddMcpEndpointsServer(opts =>
-   {
-       opts.PipelineEndpoint   = "/mcp";               // путь для HTTP-пайплайна
-       opts.ServerName         = "My MCP Server";      // имя сервера
-       opts.ServerDescription  = "API для MCP";        // описание
-       opts.ServerVersion      = "1.2.3";              // версия
-       opts.XmlCommentsPath    = "MyApp.xml";          // путь к файлу XML-документации
-       opts.HostUrl            = "https://api.mysite"; // базовый URL
-   });
+{
+opts.PipelineEndpoint = "/mcp"; // path for the HTTP pipeline
+       opts.ServerName = "My MCP Server"; // server name
+       opts.ServerDescription = "API for MCP"; // description
+       opts.ServerVersion = "1.2.3"; // version
+       opts.XmlCommentsPath = "MyApp.xml "; // path to the XML documentation file
+       opts.HostUrl = "https://api.mysite "; // base URL
+});
    ```
 
-3. В том же или другом месте настройте маршрутизацию:
+3. Set up routing in the same or another location:
 
    ```csharp
    var app = builder.Build();
 
-   app.MapControllers();                           // обычные контроллеры
-   app.MapMcpEndpointsServer();                    // MCP-эндоинты (HTTP stream & SSE)
+   app.MapControllers(); // regular controllers
+   app.MapMcpEndpointsServer(); // MCP endpoints (HTTP stream & SSE)
 
    app.Run();
    ```
 
 
-## Атрибуты
+## Attributes
 
 * `McpIgnoreAttribute`
-  Проставляется над методом контроллера для исключения его из списка генерируемых MCP-инструментов.
+  It is placed above the controller method to exclude it from the list of generated MCP tools.
 
 
-## Лицензия
+## License
 
-MIT License. Смотрите файл LICENSE для деталей.
+MIT License. See the LICENSE file for details.
