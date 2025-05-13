@@ -3,28 +3,38 @@ name: Publish NuGet Package
 on:
   push:
     tags:
-      - 'v*.*.*-*'  # любые теги вида v1.2.3-alpha
+      - 'v*.*.*-*'  # например v1.0.0-alpha
 
 jobs:
-   publish:
+  publish:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
 
-      - name: Setup .NET
+      - name: Setup .NET SDK
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: '8.0.x'
 
-      - name: Restore & Build (pack on build)
-        run: dotnet build --configuration Release
+      - name: Restore & Build
+        run: dotnet build McpEndpointsTools.sln --configuration Release
+
+      - name: Pack Library
+        run: |
+          echo "Упаковываем McpEndpointsTools..."
+          dotnet pack McpEndpointsTools/McpEndpointsTools.csproj \
+            --configuration Release \
+            --no-build \
+            --output ./nupkg
+
+      - name: List .nupkg files
+        run: ls -lh nupkg/*.nupkg
 
       - name: Publish to NuGet
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
         run: |
-          echo "Ищем созданные .nupkg:"
-          ls McpEndpointsTools/bin/Release/*.nupkg
-          dotnet nuget push McpEndpointsTools/bin/Release/*.nupkg \
+          echo "Публикуем пакет на NuGet.org"
+          dotnet nuget push nupkg/*.nupkg \
             --api-key $NUGET_API_KEY \
             --source https://api.nuget.org/v3/index.json
