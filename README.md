@@ -36,7 +36,7 @@ solution/
 1. Add the `McpEndpointsTools` project to your solution or connect via NuGet (if there is a package):
 
    ```bash
-   dotnet add package McpEndpointsServer
+   dotnet add package McpEndpointsTools
    ```
 
 2. In the file `Program.cs` (or `Startup.cs`), register the services and mapping:
