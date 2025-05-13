@@ -48,14 +48,14 @@ solution/
 
    // MCP Server registration and controller scanning
    builder.Services.AddMcpEndpointsServer(opts =>
-{
-opts.PipelineEndpoint = "/mcp"; // path for the HTTP pipeline
-       opts.ServerName = "My MCP Server"; // server name
-       opts.ServerDescription = "API for MCP"; // description
-       opts.ServerVersion = "1.2.3"; // version
-       opts.XmlCommentsPath = "MyApp.xml "; // path to the XML documentation file
-       opts.HostUrl = "https://api.mysite "; // base URL
-});
+   {
+   opts.PipelineEndpoint = "/mcp"; // path for the HTTP pipeline
+          opts.ServerName = "My MCP Server"; // server name
+          opts.ServerDescription = "API for MCP"; // description
+          opts.ServerVersion = "1.2.3"; // version
+          opts.XmlCommentsPath = "MyApp.xml "; // path to the XML documentation file
+          opts.HostUrl = "https://api.mysite "; // base URL
+   });
    ```
 
 3. Set up routing in the same or another location:
