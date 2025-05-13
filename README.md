@@ -1,20 +1,26 @@
 # MCP Endpoints Tools
 
-Library for ASP.NET Core Web API, which automatically turns each controller method into a tool and resource for the MCP server.
+Library for ASP.NET Core Web API, which automatically turns each controller method into a tool for the MCP
+server.
 
-Under the hood, MCP Endpoints Tools uses the [Model Context Protocol C# SDK](https://github.com/modelcontextprotocol/csharp-sdk "Model Context Protocol C# SDK") for working with tools and resources.
+Under the hood, MCP Endpoints Tools uses
+the [Model Context Protocol C# SDK](https://github.com/modelcontextprotocol/csharp-sdk "Model Context Protocol C# SDK")
+for working with tools.
 
 ## Description
 
-The MCP Endpoints Server scans the application build, finds all controllers and their public methods annotated with HTTP attributes, and registers them as tools and resources on the Model Context Protocol (MCP) server. In this case, XML comments from the assembly are used to fill in the description (summary) of tools and resources.
+MCP Endpoints Tools scans the application build, finds all controllers and their public methods marked with HTTP
+attributes, and registers them as Model Context Protocol (MCP) tools. In this case, XML comments from the assembly are
+used to fill in the description (summary) of the tools.
 
 ## Features
 
 * Automatic registration of all controller methods as MCP tools and resources
 * Support for method exclusion via the `[McpIgnore]` attribute
-* Loading descriptions from XML comments of an assembly via the 'XmlCommentsProvider`
+* Автоматическое добавление описания инструмента из XML-комментариев сборки через `XmlCommentsProvider`
 * Flexible configuration via `ServerOptions` (path, name, description, version, XML path)
-* Easy integration into 'IServiceCollection` and `IEndpointRouteBuilder' via extensions `ServiceCollectionExtensions` and `EndpointRouteBuilderExtensions`
+* Easy integration into 'IServiceCollection` and `IEndpointRouteBuilder' via extensions `ServiceCollectionExtensions`
+  and `EndpointRouteBuilderExtensions`
 
 ## Repository structure
 
@@ -72,8 +78,9 @@ solution/
 
 ## Attributes
 
-* `McpIgnoreAttribute`
-  It is placed above the controller method to exclude it from the list of generated MCP tools.
+* `McpIgnoreAttribute` It is placed above the controller method to exclude it from the list of generated MCP tools.
+* `Authorize` Methods and controllers marked with the Authorize attribute will not be added to the tools. In future
+  versions, support for authentication authorization may be added.
 
 
 ## License
