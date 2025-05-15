@@ -21,7 +21,7 @@ jobs:
 
       - name: Pack
         run: |
-          echo "Пакуем McpEndpontsTools.csproj → ./nupkg"
+          echo "Пакуем McpEndpointsTools.csproj → ./nupkg"
           dotnet pack McpEndpointsTools/McpEndpointsTools.csproj \
             --configuration Release \
             --no-build \
