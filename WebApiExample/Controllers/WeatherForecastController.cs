@@ -1,5 +1,6 @@
 ﻿using McpEndpointsTools.Attributes;
 using Microsoft.AspNetCore.Mvc;
+using ModelContextProtocol.Server;
 using WebApiExample.Models;
 
 namespace WebApiExample.Controllers;

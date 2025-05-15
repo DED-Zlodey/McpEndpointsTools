@@ -2,7 +2,8 @@
 using McpEndpointsTools.Infrastructure;
 using McpEndpointsTools.Options;
 using Microsoft.Extensions.DependencyInjection;
-using ModelContextProtocol.Protocol.Types;
+using Microsoft.Extensions.Options;
+using ModelContextProtocol.Protocol;
 
 namespace McpEndpointsTools.Extensions;
 
@@ -26,55 +27,42 @@ public static class McpServiceCollectionExtensions
         configure?.Invoke(opts);
         if (configure != null)
             services.Configure(configure);
-
-
-        var xmlPath = string.IsNullOrWhiteSpace(opts.XmlCommentsPath)
-            ? Path.ChangeExtension(Assembly.GetEntryAssembly()!.Location, ".xml")
-            : opts.XmlCommentsPath;
-
-        services.AddSingleton(new XmlCommentsProvider(xmlPath));
-
+        
+        services.AddSingleton(sp =>
+        {
+            var resolvedOpts = sp.GetRequiredService<IOptions<ServerOptions>>().Value;
+            var xmlPath = string.IsNullOrWhiteSpace(resolvedOpts.XmlCommentsPath)
+                ? Path.ChangeExtension(Assembly.GetEntryAssembly()!.Location, ".xml")
+                : resolvedOpts.XmlCommentsPath;
+            return new XmlCommentsProvider(xmlPath);
+        });
+        
         services.AddSingleton<OperationRegistrar>(sp =>
-            new OperationRegistrar(sp, sp.GetRequiredService<XmlCommentsProvider>(), opts.HostUrl)
-        );
-
+        {
+            var xml = sp.GetRequiredService<XmlCommentsProvider>();
+            var resolvedOpts = sp.GetRequiredService<IOptions<ServerOptions>>().Value;
+        
+            var registrar = new OperationRegistrar(sp, xml, resolvedOpts.HostUrl);
+            registrar.ScanAssembly(Assembly.GetEntryAssembly()!);
+            return registrar;
+        });
+        
+        var builder = services.AddMcpServer(sdkOpts =>
+        {
+            sdkOpts.ServerInfo = new Implementation
+            {
+                Name = opts.ServerName,
+                Version = opts.ServerVersion
+            };
+            sdkOpts.ServerInstructions = opts.ServerDescription;
+        });
+        
         var sp = services.BuildServiceProvider();
         var registrar = sp.GetRequiredService<OperationRegistrar>();
 
-        registrar.ScanAssembly(Assembly.GetEntryAssembly()!);
-
-        services.AddHostedService<OperationRegistrarHostedService>();
-
-
-        var builder = services.AddMcpServer(sdkOpts =>
-            {
-                sdkOpts.ServerInfo = new Implementation()
-                {
-                    Name = opts.ServerName,
-                    Version = opts.ServerVersion
-                };
-                sdkOpts.ServerInstructions = opts.ServerDescription;
-            })
+        builder
             .WithTools(registrar.GetTools())
             .WithResources(registrar.GetResources())
-            .WithListResourcesHandler((ctx, _) =>
-            {
-                if (ctx.Services != null)
-                {
-                    var reg = ctx.Services.GetRequiredService<OperationRegistrar>();
-                    var resources = reg.GetResources()
-                        .Select(r => r.ProtocolResource!)
-                        .ToList();
-
-                    var result = new ListResourcesResult
-                    {
-                        Resources = resources
-                    };
-                    return ValueTask.FromResult(result);
-                }
-
-                return ValueTask.FromResult(new ListResourcesResult());
-            })
             .WithHttpTransport();
 
         return builder;

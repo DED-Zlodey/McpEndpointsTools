@@ -127,7 +127,10 @@ In the `Program.cs` file, you need to:
 
 ### Complete Configuration Example in Program.cs
 
-Here's a complete example of the `Program.cs` file with McpEndpointsTools integration
+Here's a complete example of the `Program.cs` file with McpEndpointsTools integration\
+
+
+###
 
 
 

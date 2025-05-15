@@ -155,8 +155,8 @@ public class OperationRegistrar
                         Description = desc,
                         MimeType = "application/json",
                     };
-
-                    _resources.Add(McpServerResource.Create(method, instance, resOpts));
+                    if(!_resources.Exists(x => x.ProtocolResource?.Name == resOpts.Name))
+                        _resources.Add(McpServerResource.Create(method, instance, resOpts));
                 }
             }
         }

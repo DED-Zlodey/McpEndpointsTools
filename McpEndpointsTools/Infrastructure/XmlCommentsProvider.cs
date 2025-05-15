@@ -34,7 +34,7 @@ public class XmlCommentsProvider
     /// <returns>
     /// The summary text from the XML documentation file for the specified member, or null if the member is not found or has no summary documentation.
     /// </returns>
-    public string? GetSummary(string memberName)
+    public virtual string? GetSummary(string memberName)
     {
         var member = _xml.Root?
             .Element("members")?
@@ -52,7 +52,7 @@ public class XmlCommentsProvider
     /// A dictionary where the key is the parameter name and the value is the parameter description.
     /// If no descriptions are found, an empty dictionary is returned.
     /// </returns>
-    public Dictionary<string, string> GetParamDescriptions(string memberName)
+    public virtual Dictionary<string, string> GetParamDescriptions(string memberName)
     {
         var member = _xml.Root?
             .Element("members")?

@@ -7,7 +7,7 @@ namespace McpEndpointsTools.Infrastructure;
 /// Provides functionality for generating XML comments-style member names
 /// for methods using reflection.
 /// </summary>
-internal static class XmlCommentsNameHelper
+public static class XmlCommentsNameHelper
 {
     /// <summary>
     /// Generates a string representation of a method's XML documentation name,

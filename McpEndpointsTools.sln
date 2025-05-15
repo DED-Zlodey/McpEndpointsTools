@@ -8,6 +8,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "McpEndpointsTools", "McpEnd
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApiExample", "WebApiExample\WebApiExample.csproj", "{FC79E247-18E2-48C0-BD56-BF20C708615B}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{BD74D9AF-E7C4-41D6-83BD-E46D0611BBA0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", "{1CCBA04B-368F-471C-9568-5A1034E3373B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -16,6 +20,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{B48C7128-3670-46FD-9980-FB8B5FC61076} = {7057C937-A42D-415C-A6BF-D034ED0E0DAE}
 		{FC79E247-18E2-48C0-BD56-BF20C708615B} = {8DFD9F49-49DC-4CDC-80D2-18A891D729AF}
+		{1CCBA04B-368F-471C-9568-5A1034E3373B} = {BD74D9AF-E7C4-41D6-83BD-E46D0611BBA0}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{B48C7128-3670-46FD-9980-FB8B5FC61076}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -26,5 +31,9 @@ Global
 		{FC79E247-18E2-48C0-BD56-BF20C708615B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FC79E247-18E2-48C0-BD56-BF20C708615B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FC79E247-18E2-48C0-BD56-BF20C708615B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1CCBA04B-368F-471C-9568-5A1034E3373B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1CCBA04B-368F-471C-9568-5A1034E3373B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1CCBA04B-368F-471C-9568-5A1034E3373B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1CCBA04B-368F-471C-9568-5A1034E3373B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

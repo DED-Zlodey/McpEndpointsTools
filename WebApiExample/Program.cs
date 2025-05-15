@@ -3,6 +3,11 @@ using McpEndpointsTools.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+
+builder.Logging.AddFilter("ModelContextProtocol.Server", LogLevel.Trace);
+
 builder.Services.AddControllers();
 
 builder.Services.AddMcpEndpointsServer(opts =>
@@ -17,6 +22,7 @@ builder.Services.AddMcpEndpointsServer(opts =>
     );
     opts.HostUrl = "http://localhost:5258";
 });
+
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options => options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory,
