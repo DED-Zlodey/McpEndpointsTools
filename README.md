@@ -22,20 +22,6 @@ used to fill in the description (summary) of the tools.
 * Easy integration into 'IServiceCollection` and `IEndpointRouteBuilder' via extensions `ServiceCollectionExtensions`
   and `EndpointRouteBuilderExtensions`
 
-## Repository structure
-
-```plaintext
-solution/
-├── src/
-│   └── McpEndpointsTools/        # library sources
-│       ├── Extensions/           # extensions for IServiceCollection and IEndpointRouteBuilder
-│       ├── Attributes/           # McpIgnoreAttribute
-│       ├── Providers/            # XmlCommentsProvider and XmlCommentsNameHelper
-│       └── Options/              # configuration
-├── examples/                     # usage examples
-,── SampleApp/ # example ASP.NET Core Web Api of the application
-└── README.md                     
-```
 
 ## Installation
 
