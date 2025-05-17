@@ -12,7 +12,7 @@ builder.Services.AddControllers();
 
 builder.Services.AddMcpEndpointsServer(opts =>
 {
-    opts.McpEndpoint = "/mcp";
+    opts.McpEndpoint = "/mcp/";
     opts.ServerName = "API Server Helper";
     opts.ServerDescription = "The server for getting the weather";
     opts.ServerVersion = "1.0.0";
@@ -21,12 +21,27 @@ builder.Services.AddMcpEndpointsServer(opts =>
         $"{Assembly.GetExecutingAssembly().GetName().Name}.xml"
     );
     opts.HostUrl = "http://localhost:5258";
+    opts.EndpointOptions.Name = "Endpoints-tools";
+    opts.EndpointOptions.Description = "Tools for working with endpoints";
+    opts.EndpointOptions.Title = "Internal tools API";
+    opts.EndpointOptions.Endpoint = "/resources";
 });
 
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options => options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory,
     $"{Assembly.GetExecutingAssembly().GetName().Name}.xml")));
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll",
+        bls =>
+        {
+            bls.AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyHeader();
+        });
+});
 
 var app = builder.Build();
 
@@ -37,10 +52,12 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseCors("AllowAll");
 app.MapControllers();
-if (app.Environment.IsDevelopment())
-{
-    app.MapMcpEndpointsServer();
-}
+// if (app.Environment.IsDevelopment())
+// {
+//     app.MapMcpEndpointsServer();
+// }
+app.MapMcpEndpointsServer();
 
 app.Run();

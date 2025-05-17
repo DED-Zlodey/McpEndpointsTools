@@ -1,7 +1,8 @@
 ﻿using McpEndpointsTools.Attributes;
+using McpEndpointsTools.Models;
 using Microsoft.AspNetCore.Mvc;
-using ModelContextProtocol.Server;
 using WebApiExample.Models;
+using WebApiExample.Models.RequestModels;
 
 namespace WebApiExample.Controllers;
 
@@ -71,20 +72,18 @@ public class WeatherForecastController : ControllerBase
     }
 
     /// <summary>
-    /// Predicts the chance of rain based on the given atmospheric pressure.
+    /// Predicts the chance of rainfall based on the provided meteorological data.
     /// </summary>
-    /// <param name="pressure">
-    /// The atmospheric pressure value used to estimate the likelihood of precipitation.
-    /// </param>
+    /// <param name="model">The data model containing meteorological inputs, such as pressure, used for predicting rainfall.</param>
     /// <returns>
-    /// An HTTP response containing a string message indicating the rain probability.
+    /// A string message indicating the likelihood of precipitation: "There is a high probability of precipitation.", "Precipitation is possible.", or "No precipitation is expected."
     /// </returns>
     [HttpPost("PredictRainChance")]
-    public IActionResult PredictRainChance([FromBody]double pressure)
+    public IActionResult PredictRainChance([FromBody]PredictChanceRainfallModel model)
     {
-        if (pressure < 1000) return Ok("High probability of rain.");
-        if (pressure < 1015) return Ok("Precipitation is possible.");
-        return Ok("No precipitation is expected.");
+        if (model.Pressure < 1000) return Ok(new {message ="There is a high probability of precipitation."});
+        if (model.Pressure < 1015) return Ok(new {message ="Precipitation is possible."});
+        return Ok(new {message = "No precipitation is expected."});
     }
 
     /// <summary>
@@ -102,5 +101,18 @@ public class WeatherForecastController : ControllerBase
         if (tempC >= 15) return Ok("A light jacket will do.");
         if (tempC >= 5) return Ok("I need a coat.");
         return Ok("It's very cold — keep warm!");
+    }
+
+    /// <summary>
+    /// Processes a complex request and returns a detailed response based on the provided model data.
+    /// </summary>
+    /// <param name="model">An instance of <see cref="ComplexRequestModel"/> containing the input data for processing the request.</param>
+    /// <returns>
+    /// An <see cref="IActionResult"/> containing the response with a confirmation message and echoing the processed model data.
+    /// </returns>
+    [HttpPost("ProcessComplexRequest")]
+    public IActionResult ProcessComplexRequest([FromBody] ComplexRequestModel model)
+    {
+        return Ok(new { message = "Received", model });
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace McpEndpointsTools.Options;
+﻿using System.Reflection;
+
+namespace McpEndpointsTools.Options;
 
 /// <summary>
 /// Represents configuration options for the server.
@@ -6,11 +8,26 @@
 public class ServerOptions
 {
     /// <summary>
+    /// Represents the underlying private field for storing the MCP endpoint used for server routing configuration.
+    /// This field is initialized with the default value "/mcp".
+    /// </summary>
+    private string _mcpEndpoint = "/mcp";
+    /// <summary>
     /// Gets or sets the MCP endpoint used for server routing.
     /// This property defines the base path for MCP-related endpoints in the application.
     /// The default value is "/mcp".
     /// </summary>
-    public string McpEndpoint { get; set; } = "/mcp";
+    public string McpEndpoint
+    {
+        get => _mcpEndpoint;
+        set
+        {
+            var trimmed = value?.Trim() ?? "/mcp";
+            _mcpEndpoint = trimmed.TrimEnd('/');
+            if (string.IsNullOrEmpty(_mcpEndpoint))
+                _mcpEndpoint = "/mcp";
+        }
+    }
 
     /// <summary>
     /// Gets or sets the name of the server.
@@ -37,18 +54,74 @@ public class ServerOptions
     public string ServerVersion { get; set; } = "1.0.0";
 
     /// <summary>
-    /// Gets or sets the file path to the XML documentation comments file.
-    /// This property specifies the location of the XML file containing comments generated from
-    /// code documentation, which can be used to enrich services like Swagger with detailed API descriptions.
-    /// The path is configurable and should typically point to the XML output of the application's compiled assembly.
-    /// The default value is an empty string.
+    /// Stores the file path to the XML documentation file used for generating API documentation.
+    /// This field is resolved based on the application's entry assembly or manually set to a specific path.
     /// </summary>
-    public string XmlCommentsPath { get; set; } = string.Empty;
+    private string _xmlCommentsPath = string.Empty;
 
     /// <summary>
-    /// Gets or sets the host URL for the server.
-    /// This property specifies the base URL that the server will use to host its endpoints.
-    /// The default value is an empty string.
+    /// Gets or sets the file path to the XML comments file used for API documentation.
+    /// This property specifies the location of the XML file that contains the
+    /// documentation comments for the application. If not explicitly set, the
+    /// default behavior resolves it to the XML file associated with the application's entry assembly.
     /// </summary>
-    public string HostUrl { get; set; } = "";
+    public string XmlCommentsPath
+    {
+        get => _xmlCommentsPath;
+        set
+        {
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                _xmlCommentsPath = value.Trim();
+            }
+            else
+            {
+                var entryAssembly = Assembly.GetEntryAssembly();
+                if (entryAssembly == null)
+                    throw new InvalidOperationException(
+                        "Cannot resolve XML comments path automatically because entry assembly is null.");
+
+                _xmlCommentsPath = Path.ChangeExtension(entryAssembly.Location, ".xml");
+            }
+        }
+    }
+
+    /// <summary>
+    /// Represents the underlying private field for storing the base URL of the host server configuration.
+    /// This field is utilized to validate and retain a properly formatted URL that starts with "http://" or "https://".
+    /// </summary>
+    private string _hostUrl = string.Empty;
+
+    /// <summary>
+    /// Represents the base URL of the server. This property must be a valid URL starting with either "http://" or "https://".
+    /// It trims any trailing slashes, ensuring the URL is consistent, and throws an exception if the input is null, empty,
+    /// or does not follow the required format.
+    /// </summary>
+    public string HostUrl
+    {
+        get => _hostUrl;
+        set
+        {
+            var input = value?.Trim() ?? string.Empty;
+
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                throw new InvalidOperationException("HostUrl cannot be null or empty. Please provide a valid base URL (e.g., https://example.com).");
+            }
+
+            if (!input.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
+                !input.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException("HostUrl must start with http:// or https://");
+            }
+
+            _hostUrl = input.TrimEnd('/');
+        }
+    }
+
+    /// <summary>
+    /// Gets or sets the configuration options for an endpoint used in the application.
+    /// This property allows customization of endpoint-specific settings, such as the path, name, title, and description.
+    /// </summary>
+    public EndpointOptions EndpointOptions { get; set; } = new();
 }
