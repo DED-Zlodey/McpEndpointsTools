@@ -1,12 +1,9 @@
 ﻿using McpEndpointsTools.Infrastructure;
 using McpEndpointsTools.Options;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using ModelContextProtocol.Server;
 
 namespace McpEndpointsTools.Extensions;
 

@@ -13,12 +13,6 @@ namespace McpEndpointsTools.Infrastructure;
 /// to discover and register tools and resources in the server context.
 public class OperationRegistrar
 {
-    /// <summary>
-    /// Represents the service provider used for creating instances of controller types dynamically
-    /// during the scanning and registration of operations.
-    /// </summary>
-    private readonly IServiceProvider _sp;
-
     /// Represents an instance of the XmlCommentsProvider used to retrieve XML documentation comments
     /// such as summaries and parameter descriptions for methods and members.
     /// It assists in extracting metadata for tools and resources during operation registration.
@@ -65,7 +59,6 @@ public class OperationRegistrar
     public OperationRegistrar(IServiceProvider serviceProvider, XmlCommentsProvider xmlCommentsProvider,
         string basePath)
     {
-        _sp = serviceProvider;
         _xml = xmlCommentsProvider;
         _basePath = basePath.TrimEnd('/');
         _scopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
@@ -83,7 +76,6 @@ public class OperationRegistrar
         foreach (var ctrlType in controllers)
         {
             var classRoute = GetControllerRoute(ctrlType);
-            //var instance = ActivatorUtilities.CreateInstance(_sp, ctrlType);
             using var scope = _scopeFactory.CreateScope();
             var instance = ActivatorUtilities.CreateInstance(scope.ServiceProvider, ctrlType);
             var methods = GetValidMethods(ctrlType);
@@ -350,37 +342,40 @@ public class OperationRegistrar
         {
             var propType = prop.PropertyType;
             var typeName = GetSimpleTypeName(propType);
-            var description = _xml.GetSummary($"P:{prop.DeclaringType.FullName}.{prop.Name}");
-
-            var model = new PropertyResourceModel
+            if (prop.DeclaringType != null)
             {
-                Name = prop.Name,
-                Type = typeName,
-                Description = description,
-            };
+                var description = _xml.GetSummary($"P:{prop.DeclaringType.FullName}.{prop.Name}");
 
-            if (typeName == "object")
-            {
-                model.Children = ExtractPropertiesFromType(propType, visited);
+                var model = new PropertyResourceModel
+                {
+                    Name = prop.Name,
+                    Type = typeName,
+                    Description = description,
+                };
+
+                if (typeName == "object")
+                {
+                    model.Children = ExtractPropertiesFromType(propType, visited);
+                }
+                else if (typeName == "array")
+                {
+                    var elementType = GetElementType(propType);
+                    var elementTypeName = GetSimpleTypeName(elementType);
+
+                    if (elementTypeName == "object")
+                        model.Children = ExtractPropertiesFromType(elementType, visited);
+                    else
+                        model.Children = new List<PropertyResourceModel> {
+                            new PropertyResourceModel {
+                                Name = "item",
+                                Type = elementTypeName,
+                                Description = null
+                            }
+                        };
+                }
+
+                properties.Add(model);
             }
-            else if (typeName == "array")
-            {
-                var elementType = GetElementType(propType);
-                var elementTypeName = GetSimpleTypeName(elementType);
-
-                if (elementTypeName == "object")
-                    model.Children = ExtractPropertiesFromType(elementType, visited);
-                else
-                    model.Children = new List<PropertyResourceModel> {
-                        new PropertyResourceModel {
-                            Name = "item",
-                            Type = elementTypeName,
-                            Description = null
-                        }
-                    };
-            }
-
-            properties.Add(model);
         }
 
         return properties;
