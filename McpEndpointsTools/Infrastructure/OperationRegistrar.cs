@@ -48,6 +48,8 @@ public class OperationRegistrar
     private readonly List<McpServerResource> _resources = new();
 
     private readonly List<ResourceModel> _resourcesModel = new();
+    
+    private readonly IServiceScopeFactory _scopeFactory;
 
     /// <summary>
     /// Represents the base path for routing and constructing URI templates within the application.
@@ -66,6 +68,7 @@ public class OperationRegistrar
         _sp = serviceProvider;
         _xml = xmlCommentsProvider;
         _basePath = basePath.TrimEnd('/');
+        _scopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
     }
 
     /// Scans the provided assembly for controllers and their associated actions, extracting metadata and registering
@@ -80,7 +83,9 @@ public class OperationRegistrar
         foreach (var ctrlType in controllers)
         {
             var classRoute = GetControllerRoute(ctrlType);
-            var instance = ActivatorUtilities.CreateInstance(_sp, ctrlType);
+            //var instance = ActivatorUtilities.CreateInstance(_sp, ctrlType);
+            using var scope = _scopeFactory.CreateScope();
+            var instance = ActivatorUtilities.CreateInstance(scope.ServiceProvider, ctrlType);
             var methods = GetValidMethods(ctrlType);
 
             foreach (var method in methods)
