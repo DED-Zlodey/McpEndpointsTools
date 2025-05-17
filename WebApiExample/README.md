@@ -175,8 +175,8 @@ In the `Program.cs` file, you need to:
 
 
    #### Live demo
-   The demo API application is deployed at: [https://api.il2-expert.ru/mcp/resources](https://api.il2-expert.ru/mcp/resources "Demo")
-   To test connecting the MP IDE client to the endpoint: https://api.il2-expert.ru/mcp
+   - The demo API application is deployed at: [https://api.il2-expert.ru/mcp/resources](https://api.il2-expert.ru/mcp/resources "Demo")
+   - To test connecting the MCP IDE client to the endpoint: https://api.il2-expert.ru/mcp
 
 
 ###

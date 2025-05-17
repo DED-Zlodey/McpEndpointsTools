@@ -54,10 +54,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors("AllowAll");
 app.MapControllers();
-// if (app.Environment.IsDevelopment())
-// {
-//     app.MapMcpEndpointsServer();
-// }
 app.MapMcpEndpointsServer();
 
 app.Run();
