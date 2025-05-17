@@ -124,10 +124,21 @@ public class OperationRegistrar
     /// and associated route attributes.
     /// <param name="controllerType">The type of the controller to extract the route from.</param>
     /// <returns>A string representing the route template of the controller if found, otherwise null.</returns>
-    private string? GetControllerRoute(Type controllerType)
+    private string GetControllerRoute(Type controllerType)
     {
-        return controllerType.Name.Replace("Controller", "") ??
-               controllerType.GetCustomAttribute<RouteAttribute>()?.Template;
+        var routeAttr = controllerType.GetCustomAttribute<RouteAttribute>();
+        if (routeAttr != null)
+        {
+            var template = routeAttr.Template;
+            if (!string.IsNullOrWhiteSpace(template))
+            {
+                var controllerName = controllerType.Name.Replace("Controller", "", StringComparison.OrdinalIgnoreCase);
+                return template.Replace("[controller]", controllerName.ToLowerInvariant());
+            }
+        }
+
+        // По умолчанию: имя контроллера
+        return controllerType.Name.Replace("Controller", "", StringComparison.OrdinalIgnoreCase).ToLowerInvariant();
     }
 
     /// Retrieves a collection of valid methods from a specified controller type. Valid methods are

@@ -4,7 +4,7 @@
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<PackageId>McpEndpointsTools</PackageId>
         <ImplicitUsings>enable</ImplicitUsings>
-		<Version>1.0.8-alpha</Version>
+		<Version>1.0.10-alpha</Version>
 		<Authors>Zlodey</Authors>
 		<Description>Auto-registration of ASP.NET Core endpoints as MCP tools</Description>
 		<PackageTags>MCP ASP.NET Core WebAPI endpoints</PackageTags>
@@ -17,6 +17,12 @@
 Introduced the initial implementation of the MCP Endpoints Tools project, including foundational classes for server options, XML documentation handling, operation registration, and hosting setup. Added support for extension methods, dependency injection, and endpoint routing to facilitate server configuration and behavior. Included project structure, solution setup, and necessary `.gitignore` entries.</PackageReleaseNotes>
         <TargetFramework>net8.0</TargetFramework>
         <LangVersion>13</LangVersion>
+        <AssemblyVersion>1.0.10</AssemblyVersion>
+        <FileVersion>1.0.10</FileVersion>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+      <DocumentationFile>bin\Release\McpEndpointsTools.xml</DocumentationFile>
     </PropertyGroup>
 
     <ItemGroup>
