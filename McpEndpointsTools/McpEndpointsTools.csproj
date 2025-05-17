@@ -15,7 +15,8 @@
         <RepositoryType>git</RepositoryType>
         <PackageReleaseNotes>Add core structure and functionalities for MCP Endpoints Tools
 Introduced the initial implementation of the MCP Endpoints Tools project, including foundational classes for server options, XML documentation handling, operation registration, and hosting setup. Added support for extension methods, dependency injection, and endpoint routing to facilitate server configuration and behavior. Included project structure, solution setup, and necessary `.gitignore` entries.</PackageReleaseNotes>
-        <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+        <TargetFramework>net8.0</TargetFramework>
+        <LangVersion>13</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>
