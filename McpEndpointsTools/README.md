@@ -33,7 +33,7 @@ used to fill in the description (summary) of the tools.
 1. Add the `McpEndpointsTools` project to your solution or connect via NuGet (if there is a package):
 
    ```bash
-   dotnet add package McpEndpointsTools --version 1.0.6-alpha
+   dotnet add package McpEndpointsTools --version 1.0.12-alpha
    ```
 
 2. In the file `Program.cs` (or `Startup.cs`), register the services and mapping:

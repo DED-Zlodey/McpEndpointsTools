@@ -20,7 +20,7 @@ Introduced the initial implementation of the MCP Endpoints Tools project, includ
         <AssemblyVersion>1.0.10</AssemblyVersion>
         <FileVersion>1.0.10</FileVersion>
         <PackageProjectUrl>https://github.com/DED-Zlodey/McpEndpointsTools</PackageProjectUrl>
-        <PackageLicenseUrl>https://github.com/DED-Zlodey/McpEndpointsTools/blob/master/LICENSE.txt</PackageLicenseUrl>
+        <PackageLicenseUrl></PackageLicenseUrl>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
