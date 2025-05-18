@@ -95,20 +95,8 @@ In the `Program.cs` file, you need to:
        );
        
        opts.HostUrl = "http://localhost:5258";     // Host URL
-       opts.EndpointOptions.Name = "Endpoints-tools";
-       opts.EndpointOptions.Description = "Use this property as an incentive for your LLM. Do not set this property if in doubt. It is better to remove this property from the configuration altogether.";
-       opts.EndpointOptions.Title = "Internal tools API";
-       opts.EndpointOptions.Endpoint = "/resources";
    });
    ```
-   - `opts.EndpointOptions.Endpoint` Method GET returns a paginated list of all endpoints that are available to the MCP
-     server. At the same time, it describes in detail the parameters of the methods, including complex ones. You don't
-     have
-     to specify it in the configuration. An automatic endpoint will be assigned. the full path will look like this:
-     `/msp/resources`
-   - `opts.EndpointOptions.Description` It is not necessary to use it. Recommended
-   - `opts.EndpointOptions.Title` It is not necessary to use it.
-   - `opts.EndpointOptions.Name` It is not necessary to use it.
 
 
 

@@ -118,10 +118,4 @@ public class ServerOptions
             _hostUrl = input.TrimEnd('/');
         }
     }
-
-    /// <summary>
-    /// Gets or sets the configuration options for an endpoint used in the application.
-    /// This property allows customization of endpoint-specific settings, such as the path, name, title, and description.
-    /// </summary>
-    public EndpointOptions EndpointOptions { get; set; } = new();
 }

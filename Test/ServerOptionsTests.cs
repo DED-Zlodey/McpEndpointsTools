@@ -49,8 +49,7 @@ public class ServerOptionsTests
             ServerVersion = "2.5.1",
             ServerDescription = "Some server description",
             XmlCommentsPath = "docs/api.xml",
-            HostUrl = "/custom-api",
-            McpEndpoint = "/custom-mcp"
+            HostUrl = "http://localhost:8080/custom-api",
         };
 
         // Assert
@@ -58,7 +57,6 @@ public class ServerOptionsTests
         Assert.Equal("2.5.1", opts.ServerVersion);
         Assert.Equal("Some server description", opts.ServerDescription);
         Assert.Equal("docs/api.xml", opts.XmlCommentsPath);
-        Assert.Equal("/custom-api", opts.HostUrl);
-        Assert.Equal("/custom-mcp", opts.McpEndpoint);
+        Assert.Equal("http://localhost:8080/custom-api", opts.HostUrl);
     }
 }

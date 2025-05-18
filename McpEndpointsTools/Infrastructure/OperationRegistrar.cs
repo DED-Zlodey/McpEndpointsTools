@@ -1,10 +1,11 @@
 ﻿using System.Reflection;
 using McpEndpointsTools.Attributes;
-using McpEndpointsTools.Models;
+using McpEndpointsTools.Handlers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
 
 namespace McpEndpointsTools.Infrastructure;
@@ -30,19 +31,12 @@ public class OperationRegistrar
     /// custom attributes, XML comments, and routing information.
     /// </remarks>
     private readonly List<McpServerTool> _tools = new();
-
-    /// <summary>
-    /// A private list that holds instances of <see cref="McpServerResource"/>.
-    /// It is used to store server resource definitions created during the scanning
-    /// and processing of assemblies and their associated API endpoints.
-    /// This list is populated within the <c>ScanAssembly</c> method,
-    /// where resources are created based on method routes, HTTP attributes,
-    /// and XML documentation comments for summary descriptions.
-    /// </summary>
-    private readonly List<McpServerResource> _resources = new();
-
-    private readonly List<ResourceModel> _resourcesModel = new();
     
+
+    /// Represents an instance of the IServiceScopeFactory used to create new service scope instances.
+    /// It facilitates dependency injection for resolving scoped services during the registration
+    /// and initialization of controllers or related resources. This enables each operation or
+    /// registration process to utilize its own dependency scope.
     private readonly IServiceScopeFactory _scopeFactory;
 
     /// <summary>
@@ -73,19 +67,22 @@ public class OperationRegistrar
     {
         var controllers = GetValidControllers(asm);
 
+
         foreach (var ctrlType in controllers)
         {
             var classRoute = GetControllerRoute(ctrlType);
-            using var scope = _scopeFactory.CreateScope();
-            var instance = ActivatorUtilities.CreateInstance(scope.ServiceProvider, ctrlType);
             var methods = GetValidMethods(ctrlType);
 
+            using var scope = _scopeFactory.CreateScope();
+            var instance = ActivatorUtilities.CreateInstance(scope.ServiceProvider, ctrlType);
             foreach (var method in methods)
             {
                 var http = GetHttpMethod(method);
                 if (http == null) continue;
 
-                var methodRoute = http.Template ?? string.Empty;
+                var methodRoute = http.Template
+                                  ?? method.GetCustomAttribute<RouteAttribute>()?.Template
+                                  ?? string.Empty;
                 var xmlName = XmlCommentsNameHelper.GetMemberNameForMethod(method);
                 var desc = _xml.GetSummary(xmlName) ?? string.Empty;
                 var controllerPart = ctrlType.Name.Replace("Controller", "", StringComparison.Ordinal)
@@ -96,11 +93,59 @@ public class OperationRegistrar
                     var absoluteUri = CombineRoutes(_basePath, classRoute, methodRoute);
                     var toolName = GenerateToolName(controllerPart, method);
 
-                    RegisterTool(method, instance, toolName, desc);
-                    RegisterResource(method, instance, toolName, absoluteUri, desc);
-                    RegisterResourceModel(method, xmlName, toolName, absoluteUri, desc, http);
+                    // Create handler
+                    var handler = new EndpointHandler(_scopeFactory, ctrlType, method);
+                    var handleMethod = typeof(EndpointHandler).GetMethod(nameof(EndpointHandler.Handle));
+
+                    var opts = new McpServerToolCreateOptions
+                    {
+                        Name = toolName,
+                        Description = desc,
+                        Title = toolName
+                    };
+                    
+                    if (handleMethod != null)
+                    {
+                        var universalTool = CreateUniversalTool(handleMethod, handler, opts);
+                        var schemaTool = McpServerTool.Create(method, instance, opts);
+                        var finalTool = new McpServerToolWithDifferentImpl(universalTool, schemaTool);
+                        _tools.Add(finalTool);
+                    }
                 }
             }
+        }
+    }
+
+    /// Creates a universal tool that wraps an endpoint handler method and associates it with
+    /// the provided options for creating a tool within the server context. This method determines
+    /// whether the handler method is asynchronous or synchronous and creates the appropriate delegate
+    /// for tool execution.
+    /// <param name="handleMethod">
+    /// The endpoint handler method, represented by a MethodInfo instance, that implements the logic of the tool.
+    /// </param>
+    /// <param name="handler">
+    /// The object instance containing the handler method. This is used as the target when creating the delegate for the method.
+    /// </param>
+    /// <param name="opts">
+    /// Options for creating the McpServerTool, including metadata such as the tool's name, title, and description.
+    /// </param>
+    /// <returns>
+    /// A new instance of McpServerTool, representing the universal tool that was created based on the provided handler method and options.
+    /// </returns>
+    private McpServerTool CreateUniversalTool(MethodInfo handleMethod, object handler, McpServerToolCreateOptions opts)
+    {
+        bool isAsync = typeof(Task).IsAssignableFrom(handleMethod.ReturnType);
+        if (isAsync)
+        {
+            var del = (Func<RequestContext<CallToolRequestParams>, Task<object?>>)
+                handleMethod.CreateDelegate(typeof(Func<RequestContext<CallToolRequestParams>, Task<object?>>), handler);
+            return McpServerTool.Create(del, opts);
+        }
+        else
+        {
+            var del = (Func<RequestContext<CallToolRequestParams>, object?>)
+                handleMethod.CreateDelegate(typeof(Func<RequestContext<CallToolRequestParams>, object?>), handler);
+            return McpServerTool.Create(del, opts);
         }
     }
 
@@ -204,220 +249,9 @@ public class OperationRegistrar
         return $"{controllerPart}-{method.Name.ToLowerInvariant()}";
     }
 
-    /// Registers a new tool by associating it with the specified method, instance, tool name, and description.
-    /// This method creates and adds a new `McpServerTool` instance to the internal list of tools.
-    /// <param name="method">The method information to associate with the tool.</param>
-    /// <param name="instance">The instance of the controller or object containing the method.</param>
-    /// <param name="toolName">The unique name to assign to the tool being registered.</param>
-    /// <param name="desc">The description associated with the tool, typically used for documentation or display purposes.</param>
-    private void RegisterTool(MethodInfo method, object instance, string toolName, string desc)
-    {
-        var opts = new McpServerToolCreateOptions
-        {
-            Name = toolName,
-            Description = desc,
-            Title = toolName,
-        };
-
-        _tools.Add(McpServerTool.Create(method, instance, opts));
-    }
-
-    /// Registers a resource in the server context based on the provided method information,
-    /// instance, tool name, URI template, and description.
-    /// This method creates and adds a new server resource to the internal resource collection.
-    /// <param name="method">The method information used to define the resource.</param>
-    /// <param name="instance">The instance of the controller or handler associated with the resource.</param>
-    /// <param name="toolName">The name of the tool associated with the resource.</param>
-    /// <param name="uri">The URI template that represents the resource endpoint.</param>
-    /// <param name="desc">A description of the resource for documentation purposes.</param>
-    private void RegisterResource(MethodInfo method, object instance, string toolName, string uri, string desc)
-    {
-        _resources.Add(McpServerResource.Create(method, instance, new McpServerResourceCreateOptions
-        {
-            UriTemplate = uri,
-            Name = $"{toolName}-resource",
-            Description = desc,
-            MimeType = "application/json"
-        }));
-    }
-
-    /// Registers a resource model by utilizing method metadata and XML comments to form
-    /// a structured representation of a resource. This method processes the method's
-    /// parameters, retrieves their descriptions if available from XML documentation,
-    /// and adds the information to an internal list of resource models for further use.
-    /// <param name="method">
-    /// The method info object providing metadata about the method being registered.
-    /// </param>
-    /// <param name="xmlName">
-    /// The name of the XML documentation node associated with the method.
-    /// </param>
-    /// <param name="toolName">
-    /// A string representing the name of the tool associated with the resource.
-    /// </param>
-    /// <param name="uri">
-    /// The URI of the resource.
-    /// </param>
-    /// <param name="desc">
-    /// A brief description of the resource.
-    /// </param>
-    /// <param name="http">
-    /// An attribute providing information about the HTTP method associated with the resource.
-    /// </param>
-    private void RegisterResourceModel(MethodInfo method, string xmlName, string toolName, string uri, string desc,
-        HttpMethodAttribute http)
-    {
-        var paramDescriptions = _xml.GetParamDescriptions(xmlName);
-        var methodParams = new List<PropertyResourceModel>();
-
-        foreach (var param in method.GetParameters())
-        {
-            var isComplex = !(param.ParameterType.IsPrimitive || param.ParameterType == typeof(string));
-
-            if (isComplex)
-            {
-                // Сам параметр (например: "model")
-                var paramModel = new PropertyResourceModel
-                {
-                    Name = param.Name!,
-                    Type = IsArray(param.ParameterType) ? "array" : "object",
-                    Description = paramDescriptions.TryGetValue(param.Name!, out var descText) ? descText : null,
-                    Children = ExtractPropertiesFromType(param.ParameterType, new HashSet<Type>())
-                };
-
-                methodParams.Add(paramModel);
-            }
-            else
-            {
-                methodParams.Add(new PropertyResourceModel
-                {
-                    Name = param.Name!,
-                    Type = param.ParameterType.Name,
-                    Description = paramDescriptions.TryGetValue(param.Name!, out var descText) ? descText : null
-                });
-            }
-        }
-
-        _resourcesModel.Add(new ResourceModel
-        {
-            Uri = uri,
-            Name = toolName,
-            Description = desc,
-            HttpMethod = http.HttpMethods.FirstOrDefault() ?? "GET",
-            MimeType = "application/json",
-            Params = methodParams
-        });
-    }
-
     /// Retrieves the list of tools registered with the operation registrar.
     /// <return>
     /// A read-only list of tools of type McpServerTool registered with the operation registrar.
     /// </return>
     public IReadOnlyList<McpServerTool> GetTools() => _tools;
-
-    /// Retrieves the list of resources registered with the operation registrar.
-    /// <returns>
-    /// A read-only list of McpServerResource objects that represent the resources registered with the operation registrar.
-    /// </returns>
-    public IReadOnlyList<McpServerResource> GetResources() => _resources;
-
-    /// Retrieves the collection of internal resource models that have been registered
-    /// within the operation registrar. These resource models contain metadata about
-    /// specific API resources, including their names, descriptions, URIs, HTTP methods,
-    /// and associated properties.
-    /// <returns>A read-only list of internal resource models.</returns>
-    public IReadOnlyList<ResourceModel> GetInternalResources() => _resourcesModel;
-
-    /// Registers a tool within the operation registrar.
-    /// <param name="tool">
-    /// The instance of <see cref="McpServerTool"/> to be registered. Represents the tool
-    /// with its associated metadata and functionality to be added to the registrar.
-    /// </param>
-    public void RegisterTool(McpServerTool tool)
-    {
-        _tools.Add(tool);
-    }
-
-    private List<PropertyResourceModel> ExtractPropertiesFromType(Type type, HashSet<Type>? visited = null)
-    {
-        visited ??= new HashSet<Type>();
-
-        if (visited.Contains(type))
-            return new List<PropertyResourceModel>(); // prevent circular refs
-
-        visited.Add(type);
-
-        var properties = new List<PropertyResourceModel>();
-        var props = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
-
-        foreach (var prop in props)
-        {
-            var propType = prop.PropertyType;
-            var typeName = GetSimpleTypeName(propType);
-            if (prop.DeclaringType != null)
-            {
-                var description = _xml.GetSummary($"P:{prop.DeclaringType.FullName}.{prop.Name}");
-
-                var model = new PropertyResourceModel
-                {
-                    Name = prop.Name,
-                    Type = typeName,
-                    Description = description,
-                };
-
-                if (typeName == "object")
-                {
-                    model.Children = ExtractPropertiesFromType(propType, visited);
-                }
-                else if (typeName == "array")
-                {
-                    var elementType = GetElementType(propType);
-                    var elementTypeName = GetSimpleTypeName(elementType);
-
-                    if (elementTypeName == "object")
-                        model.Children = ExtractPropertiesFromType(elementType, visited);
-                    else
-                        model.Children = new List<PropertyResourceModel> {
-                            new PropertyResourceModel {
-                                Name = "item",
-                                Type = elementTypeName,
-                                Description = null
-                            }
-                        };
-                }
-
-                properties.Add(model);
-            }
-        }
-
-        return properties;
-    }
-
-    /// Determines whether the specified type is an array or implements the `IEnumerable<>` generic interface.
-    /// <param name="type">The type to evaluate.</param>
-    /// <returns>true if the specified type is an array or a generic enumerable; otherwise, false.
-    private bool IsArray(Type type)
-    {
-        return type.IsArray || 
-               (type.IsGenericType && typeof(IEnumerable<>).IsAssignableFrom(type.GetGenericTypeDefinition()));
-    }
-
-    private Type GetElementType(Type type)
-    {
-        return type.IsArray
-            ? type.GetElementType()!
-            : type.GetGenericArguments().FirstOrDefault() ?? typeof(object);
-    }
-    private string GetSimpleTypeName(Type type)
-    {
-        if (type == typeof(string)) return "string";
-        if (type == typeof(bool)) return "boolean";
-        if (type == typeof(int) || type == typeof(long) || type == typeof(short) || type == typeof(byte)) return "integer";
-        if (type == typeof(float) || type == typeof(double) || type == typeof(decimal)) return "number";
-        if (type == typeof(DateTime) || type == typeof(Guid) || type == typeof(TimeSpan)) return "string";
-        if (type.IsArray || typeof(System.Collections.IEnumerable).IsAssignableFrom(type) && type != typeof(string))
-            return "array";
-        if (type.IsClass || (type.IsValueType && !type.IsPrimitive && !type.IsEnum))
-            return "object";
-        return "unknown";
-    }
 }

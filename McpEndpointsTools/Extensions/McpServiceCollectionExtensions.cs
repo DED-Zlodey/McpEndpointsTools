@@ -4,7 +4,6 @@ using McpEndpointsTools.Options;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using ModelContextProtocol.Protocol;
-using ModelContextProtocol.Server;
 
 namespace McpEndpointsTools.Extensions;
 
@@ -30,11 +29,9 @@ public static class McpServiceCollectionExtensions
 
         RegisterXmlCommentsProvider(services);
         RegisterOperationRegistrar(services);
-        services.AddTransient<ToolsEndpointHandler>();
-
         var builder = CreateMcpServerBuilder(services, opts);
 
-        RegisterToolsAndResources(services, opts, builder);
+        RegisterToolsAndResources(services, builder);
 
         return builder;
     }
@@ -122,27 +119,14 @@ public static class McpServiceCollectionExtensions
     /// <param name="builder">
     /// The <see cref="IMcpServerBuilder"/> instance used to configure and finalize the MCP server setup with tools and resources.
     /// </param>
-    private static void RegisterToolsAndResources(IServiceCollection services, ServerOptions opts, IMcpServerBuilder builder)
+    private static void RegisterToolsAndResources(IServiceCollection services, IMcpServerBuilder builder)
     {
         var sp = services.BuildServiceProvider();
         var registrar = sp.GetRequiredService<OperationRegistrar>();
 
-        // Register a built-in tool
-        var instance = sp.GetRequiredService<ToolsEndpointHandler>();
-        var methodInfo = typeof(ToolsEndpointHandler).GetMethod(nameof(ToolsEndpointHandler.Handle))!;
-        var tool = McpServerTool.Create(methodInfo, instance, new McpServerToolCreateOptions
-        {
-            Name = opts.EndpointOptions.Name,
-            Title = opts.EndpointOptions.Title,
-            Description = opts.EndpointOptions.Description,
-        });
-
-        registrar.RegisterTool(tool);
-
         // Finalize registration
         builder
             .WithTools(registrar.GetTools())
-            .WithResources(registrar.GetResources())
             .WithHttpTransport();
     }
 }

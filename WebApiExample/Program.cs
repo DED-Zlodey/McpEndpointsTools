@@ -21,10 +21,6 @@ builder.Services.AddMcpEndpointsServer(opts =>
         $"{Assembly.GetExecutingAssembly().GetName().Name}.xml"
     );
     opts.HostUrl = "http://localhost:5258";
-    opts.EndpointOptions.Name = "Endpoints-tools";
-    opts.EndpointOptions.Description = "Tools for working with endpoints";
-    opts.EndpointOptions.Title = "Internal tools API";
-    opts.EndpointOptions.Endpoint = "/resources";
 });
 
 

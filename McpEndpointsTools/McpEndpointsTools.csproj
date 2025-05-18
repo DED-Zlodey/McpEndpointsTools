@@ -4,7 +4,7 @@
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<PackageId>McpEndpointsTools</PackageId>
         <ImplicitUsings>enable</ImplicitUsings>
-		<Version>1.0.10-alpha</Version>
+		<Version>1.0.12-alpha</Version>
 		<Authors>Zlodey</Authors>
 		<Description>Auto-registration of ASP.NET Core endpoints as MCP tools</Description>
 		<PackageTags>MCP ASP.NET Core WebAPI endpoints</PackageTags>
@@ -19,6 +19,8 @@ Introduced the initial implementation of the MCP Endpoints Tools project, includ
         <LangVersion>13</LangVersion>
         <AssemblyVersion>1.0.10</AssemblyVersion>
         <FileVersion>1.0.10</FileVersion>
+        <PackageProjectUrl>https://github.com/DED-Zlodey/McpEndpointsTools</PackageProjectUrl>
+        <PackageLicenseUrl>https://github.com/DED-Zlodey/McpEndpointsTools/blob/master/LICENSE.txt</PackageLicenseUrl>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
@@ -26,9 +28,8 @@ Introduced the initial implementation of the MCP Endpoints Tools project, includ
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.3.0" />
-      <PackageReference Include="ModelContextProtocol" Version="0.1.0-preview.14" />
-      <PackageReference Include="ModelContextProtocol.AspNetCore" Version="0.1.0-preview.14" />
+      <PackageReference Include="ModelContextProtocol" Version="0.2.0-preview.1" />
+      <PackageReference Include="ModelContextProtocol.AspNetCore" Version="0.2.0-preview.1" />
     </ItemGroup>
 
 </Project>

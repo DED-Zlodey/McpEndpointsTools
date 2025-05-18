@@ -1,5 +1,4 @@
-﻿using McpEndpointsTools.Infrastructure;
-using McpEndpointsTools.Options;
+﻿using McpEndpointsTools.Options;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,11 +26,6 @@ public static class McpEndpointRouteBuilderExtensions
             .ServiceProvider
             .GetRequiredService<IOptions<ServerOptions>>()
             .Value;
-        
-
-        var instance = endpoints.ServiceProvider.GetRequiredService<ToolsEndpointHandler>();
-        
-        endpoints.MapGet($"{opts.McpEndpoint}{opts.EndpointOptions.Endpoint}", instance.Handle);
 
         endpoints.MapMcp(opts.McpEndpoint);
 

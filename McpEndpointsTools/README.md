@@ -1,5 +1,5 @@
-﻿![Static Badge](https://img.shields.io/badge/MCP%20SDK-preview.14-%239553E9?logo=dotnet)
-![Static Badge](https://img.shields.io/badge/MCP%20Endpoints%20Tools-v1.0.6%20alpha-%239553E9?logo=dotnet)
+﻿![Static Badge](https://img.shields.io/badge/MCP%20SDK-0.2.0%20preview.1-%239553E9?logo=dotnet)
+![Static Badge](https://img.shields.io/badge/MCP%20Endpoints%20Tools-v1.0.12%20alpha-%239553E9?logo=dotnet)
 
 # MCP Endpoints Tools
 
@@ -9,6 +9,9 @@ server.
 Under the hood, MCP Endpoints Tools uses
 the [Model Context Protocol C# SDK](https://github.com/modelcontextprotocol/csharp-sdk "Model Context Protocol C# SDK")
 for working with tools.
+
+> [!NOTE]
+> This project is in alpha version! Various errors are possible. Please write to the issue for errors and suggestions on library expansion.
 
 ## Description
 
@@ -24,14 +27,13 @@ used to fill in the description (summary) of the tools.
 * Flexible configuration via `ServerOptions` (path, name, description, version, XML path)
 * Easy integration into 'IServiceCollection` and `IEndpointRouteBuilder' via extensions `ServiceCollectionExtensions`
   and `EndpointRouteBuilderExtensions`
-* An API endpoint is automatically created that returns complete information about the application methods.
 
 ## Installation
 
 1. Add the `McpEndpointsTools` project to your solution or connect via NuGet (if there is a package):
 
    ```bash
-   dotnet add package McpEndpointsTools
+   dotnet add package McpEndpointsTools --version 1.0.6-alpha
    ```
 
 2. In the file `Program.cs` (or `Startup.cs`), register the services and mapping:
@@ -50,65 +52,9 @@ used to fill in the description (summary) of the tools.
             opts.ServerVersion = "1.2.3"; // version
             opts.XmlCommentsPath = "MyApp.xml "; // path to the XML documentation file
             opts.HostUrl = "https://api.mysite "; // base URL
-            opts.EndpointOptions.Name = "Endpoints-tools";
-            opts.EndpointOptions.Description = "Use this property as an incentive for your LLM. Do not set this property if in doubt. It is better to remove this property from the configuration altogether.";
-            opts.EndpointOptions.Title = "Internal tools API";
-            opts.EndpointOptions.Endpoint = "/resources";
      });
    ```
 
-   - `opts.EndpointOptions.Endpoint` Method GET returns a paginated list of all endpoints that are available to the MCP
-     server. At the same time, it describes in detail the parameters of the methods, including complex ones. You don't
-     have
-     to specify it in the configuration. An automatic endpoint will be assigned. the full path will look like this:
-     `/msp/resources`
-   - `opts.EndpointOptions.Description` It is not necessary to use it. Recommended
-   - `opts.EndpointOptions.Title` It is not necessary to use it.
-   - `opts.EndpointOptions.Name` It is not necessary to use it.
-
-   Example response endpoint `opts.EndpointOptions.Endpoint`
-   ```json
-   {
-     "page": 1,
-     "pageSize": 10,
-     "totalItems": 4,
-     "totalPages": 1,
-     "hasPreviousPage": false,
-     "hasNextPage": false,
-     "items": [
-       {
-         "name": "weatherforecast-get",
-         "description": "Retrieves a collection of weather forecast information for the upcoming days.",
-         "uri": "https://api.il2-expert.ru/WeatherForecast",
-         "httpMethod": "GET",
-         "mimeType": "application/json",
-         "params": []
-       },
-       {
-         "name": "weatherforecast-predictrainchance",
-         "description": "Predicts the chance of rainfall based on the provided meteorological data.",
-         "uri": "https://api.il2-expert.ru/WeatherForecast/PredictRainChance",
-         "httpMethod": "POST",
-         "mimeType": "application/json",
-         "params": [
-           {
-             "name": "model",
-             "type": "object",
-             "description": "The data model containing meteorological inputs, such as pressure, used for predicting rainfall.",
-             "children": [
-               {
-                 "name": "Pressure",
-                 "type": "number",
-                 "description": "Gets or sets the atmospheric pressure value used in predicting the chance of rainfall.\n            This value typically represents the barometric pressure measured in a specific unit, such as hPa or atm.",
-                 "children": null
-               }
-             ]
-           }
-         ]
-       }
-     ]
-   }
-   ```
 
 3. **Enable XML documentation generation** in your `.csproj` project file:
    ```xml

@@ -1,5 +1,4 @@
 ﻿using McpEndpointsTools.Attributes;
-using McpEndpointsTools.Models;
 using Microsoft.AspNetCore.Mvc;
 using WebApiExample.Models;
 using WebApiExample.Models.RequestModels;
@@ -10,7 +9,7 @@ namespace WebApiExample.Controllers;
 /// Handles weather forecast operations including retrieving weather forecast data.
 /// </summary>
 [ApiController]
-[Route("[controller]")]
+[Route("api/[controller]")]
 public class WeatherForecastController : ControllerBase
 {
     /// <summary>
@@ -40,7 +39,8 @@ public class WeatherForecastController : ControllerBase
     /// <returns>
     /// An enumerable collection of <see cref="WeatherForecast"/> objects containing the forecast data for multiple days.
     /// </returns>
-    [HttpGet(Name = "GetWeatherForecast")]
+    [HttpGet]
+    [Route("GetWeatherForecast")]
     public IActionResult Get()
     {
         return Ok(
@@ -68,7 +68,10 @@ public class WeatherForecastController : ControllerBase
     {
         var res = h / 10;
         var windSpeed = v * Math.Pow(res, k);
-        return Ok(new { speed = windSpeed });
+        return Ok(new WindSpeedResponseModel
+        {
+            Speed = (decimal)windSpeed
+        });
     }
 
     /// <summary>
@@ -81,6 +84,7 @@ public class WeatherForecastController : ControllerBase
     [HttpPost("PredictRainChance")]
     public IActionResult PredictRainChance([FromBody]PredictChanceRainfallModel model)
     {
+        Console.WriteLine($"[CONTROLLER] PredictRainChance called! pressure={model.Pressure}");
         if (model.Pressure < 1000) return Ok(new {message ="There is a high probability of precipitation."});
         if (model.Pressure < 1015) return Ok(new {message ="Precipitation is possible."});
         return Ok(new {message = "No precipitation is expected."});

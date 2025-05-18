@@ -61,17 +61,13 @@ public class OperationRegistrarTests
 
         // Assert
         var tools = registrar.GetTools();
-        var resources = registrar.GetResources();
 
         Assert.Single(tools);
-        Assert.Single(resources);
 
         var tool = tools.First();
-        var res = resources.First();
 
         Assert.Equal("fake-testaction", tool.ProtocolTool.Name);
         Assert.Equal("Test summary", tool.ProtocolTool.Description);
-        Assert.Equal("/api/Fake/test", res.ProtocolResource!.Uri);
     }
 
     /// <summary>
@@ -95,12 +91,9 @@ public class OperationRegistrarTests
 
         // Assert
         var tools = registrar.GetTools();
-        var resources = registrar.GetResources();
 
         Assert.DoesNotContain(tools,
             t => t.ProtocolTool.Name.StartsWith("ignoredcontroller", StringComparison.OrdinalIgnoreCase));
-        Assert.DoesNotContain(resources,
-            r => r.ProtocolResource!.Name.StartsWith("ignoredcontroller", StringComparison.OrdinalIgnoreCase));
     }
 }
 
