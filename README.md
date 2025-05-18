@@ -10,6 +10,10 @@ Under the hood, MCP Endpoints Tools uses
 the [Model Context Protocol C# SDK](https://github.com/modelcontextprotocol/csharp-sdk "Model Context Protocol C# SDK")
 for working with tools.
 
+> [!NOTE]
+> This project is in alpha version! Various errors are possible. Please write to the issue for errors and suggestions on library expansion.
+
+
 ## Description
 
 MCP Endpoints Tools scans the application build, finds all controllers and their public methods marked with HTTP
