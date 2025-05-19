@@ -23,7 +23,7 @@ used to fill in the description (summary) of the tools.
 
 * Automatic registration of all controller methods as MCP tools and resources
 * Support for method exclusion via the `[McpIgnore]` attribute
-* Автоматическое добавление описания инструмента из XML-комментариев сборки через `XmlCommentsProvider`
+* Automatic addition of the tool description from the XML comments of the assembly via the 'XmlCommentsProvider`
 * Flexible configuration via `ServerOptions` (path, name, description, version, XML path)
 * Easy integration into 'IServiceCollection` and `IEndpointRouteBuilder' via extensions `ServiceCollectionExtensions`
   and `EndpointRouteBuilderExtensions`
