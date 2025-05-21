@@ -76,9 +76,7 @@ public class EndpointHandler
             }
         }
         
-        var res = _controllerMethod.Invoke(controller, args);
-        var result = ExtractActionResult(res);
-
+        var result = _controllerMethod.Invoke(controller, args);
         if (result is Task task)
         {
             task.GetAwaiter().GetResult();
@@ -93,31 +91,6 @@ public class EndpointHandler
         }
 
         return result;
-    }
-
-    /// <summary>
-    /// Extracts the meaningful value from an ActionResult. For various ActionResult types, it retrieves
-    /// the embedded data or content, such as the value, content, or status code.
-    /// </summary>
-    /// <param name="actionResult">The ActionResult object from which to extract the data.</param>
-    /// <returns>The extracted value from the ActionResult, or the original object if not an ActionResult type.</returns>
-    private static object? ExtractActionResult(object? actionResult)
-    {
-        switch (actionResult)
-        {
-            case ObjectResult objRes:
-                return objRes.Value;
-            case JsonResult jsonRes:
-                return jsonRes.Value;
-            case ContentResult contRes:
-                return contRes.Content;
-            case FileResult fileRes:
-                return fileRes.FileDownloadName;
-            case StatusCodeResult codeRes:
-                return codeRes.StatusCode;
-            default:
-                return actionResult;
-        }
     }
 
     /// <summary>
