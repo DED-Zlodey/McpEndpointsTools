@@ -54,7 +54,7 @@ public class OperationRegistrarTests
         var xmlName = XmlCommentsNameHelper.GetMemberNameForMethod(method);
         var xml = CreateFakeXmlProvider(xmlName, "Test summary");
 
-        var registrar = new OperationRegistrar(provider, xml, "/api");
+        var registrar = new OperationRegistrar(provider, xml);
 
         // Act
         registrar.ScanAssembly(typeof(FakeController).Assembly);
@@ -84,7 +84,7 @@ public class OperationRegistrarTests
         var provider = services.BuildServiceProvider();
 
         var dummyXml = CreateFakeXmlProvider("dummy", "ignored");
-        var registrar = new OperationRegistrar(provider, dummyXml, "/base");
+        var registrar = new OperationRegistrar(provider, dummyXml);
 
         // Act
         registrar.ScanAssembly(typeof(IgnoredController).Assembly);

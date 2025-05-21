@@ -39,22 +39,14 @@ public class OperationRegistrar
     /// registration process to utilize its own dependency scope.
     private readonly IServiceScopeFactory _scopeFactory;
 
-    /// <summary>
-    /// Represents the base path for routing and constructing URI templates within the application.
-    /// This value is used as the root URL prefix for defining API endpoints.
-    /// </summary>
-    private readonly string _basePath;
-
     /// Represents a class responsible for registering operations, tools, and resources
     /// for a server application. It provides methods to scan assemblies and collect
     /// relevant information about controllers, tools, and resources. This class interacts
     /// with an `XmlCommentsProvider` to retrieve XML documentation comments and uses
     /// a service provider for dependency resolution.
-    public OperationRegistrar(IServiceProvider serviceProvider, XmlCommentsProvider xmlCommentsProvider,
-        string basePath)
+    public OperationRegistrar(IServiceProvider serviceProvider, XmlCommentsProvider xmlCommentsProvider)
     {
         _xml = xmlCommentsProvider;
-        _basePath = basePath.TrimEnd('/');
         _scopeFactory = serviceProvider.GetRequiredService<IServiceScopeFactory>();
     }
 
@@ -67,7 +59,6 @@ public class OperationRegistrar
     {
         var controllers = GetValidControllers(asm);
 
-
         foreach (var ctrlType in controllers)
         {
             var classRoute = GetControllerRoute(ctrlType);
@@ -79,10 +70,7 @@ public class OperationRegistrar
             {
                 var http = GetHttpMethod(method);
                 if (http == null) continue;
-
-                var methodRoute = http.Template
-                                  ?? method.GetCustomAttribute<RouteAttribute>()?.Template
-                                  ?? string.Empty;
+                
                 var xmlName = XmlCommentsNameHelper.GetMemberNameForMethod(method);
                 var desc = _xml.GetSummary(xmlName) ?? string.Empty;
                 var controllerPart = ctrlType.Name.Replace("Controller", "", StringComparison.Ordinal)
@@ -90,7 +78,6 @@ public class OperationRegistrar
 
                 if (!string.IsNullOrEmpty(classRoute))
                 {
-                    var absoluteUri = CombineRoutes(_basePath, classRoute, methodRoute);
                     var toolName = GenerateToolName(controllerPart, method);
 
                     // Create handler
@@ -215,21 +202,6 @@ public class OperationRegistrar
     private HttpMethodAttribute? GetHttpMethod(MethodInfo method)
     {
         return method.GetCustomAttributes().OfType<HttpMethodAttribute>().FirstOrDefault();
-    }
-
-    /// Combines multiple route segments into a single route string, ensuring proper formatting and
-    /// trimming of slashes. If the combined result is an empty string, it returns the base path.
-    /// <param name="basePath">The base path of the server where the routes are rooted.</param>
-    /// <param name="classRoute">The route associated with the class or controller.</param>
-    /// <param name="methodRoute">The route associated with the specific method or operation.</param>
-    /// <return>A combined route string derived from the base path, class route, and method route.</return>
-    private string CombineRoutes(string basePath, string classRoute, string methodRoute)
-    {
-        var routeTemplate = string.Join("/",
-            new[] { classRoute.Trim('/'), methodRoute.Trim('/') }
-                .Where(p => !string.IsNullOrEmpty(p)));
-
-        return string.IsNullOrEmpty(routeTemplate) ? basePath : $"{basePath}/{routeTemplate}";
     }
 
     /// Generates a tool name based on the provided controller part and method information.

@@ -85,37 +85,4 @@ public class ServerOptions
             }
         }
     }
-
-    /// <summary>
-    /// Represents the underlying private field for storing the base URL of the host server configuration.
-    /// This field is utilized to validate and retain a properly formatted URL that starts with "http://" or "https://".
-    /// </summary>
-    private string _hostUrl = string.Empty;
-
-    /// <summary>
-    /// Represents the base URL of the server. This property must be a valid URL starting with either "http://" or "https://".
-    /// It trims any trailing slashes, ensuring the URL is consistent, and throws an exception if the input is null, empty,
-    /// or does not follow the required format.
-    /// </summary>
-    public string HostUrl
-    {
-        get => _hostUrl;
-        set
-        {
-            var input = value?.Trim() ?? string.Empty;
-
-            if (string.IsNullOrWhiteSpace(input))
-            {
-                throw new InvalidOperationException("HostUrl cannot be null or empty. Please provide a valid base URL (e.g., https://example.com).");
-            }
-
-            if (!input.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
-                !input.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
-            {
-                throw new InvalidOperationException("HostUrl must start with http:// or https://");
-            }
-
-            _hostUrl = input.TrimEnd('/');
-        }
-    }
 }

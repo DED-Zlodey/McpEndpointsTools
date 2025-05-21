@@ -81,9 +81,7 @@ public static class McpServiceCollectionExtensions
         services.AddSingleton(sp =>
         {
             var xml = sp.GetRequiredService<XmlCommentsProvider>();
-            var resolvedOpts = sp.GetRequiredService<IOptions<ServerOptions>>().Value;
-
-            var registrar = new OperationRegistrar(sp, xml, resolvedOpts.HostUrl);
+            var registrar = new OperationRegistrar(sp, xml);
             registrar.ScanAssembly(Assembly.GetEntryAssembly()!);
             return registrar;
         });

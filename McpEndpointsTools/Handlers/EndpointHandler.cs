@@ -1,6 +1,6 @@
-﻿using System.Reflection;
+﻿using System.Linq.Expressions;
+using System.Reflection;
 using System.Text.Json;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using ModelContextProtocol.Protocol;
 using ModelContextProtocol.Server;
@@ -16,24 +16,31 @@ namespace McpEndpointsTools.Handlers;
 public class EndpointHandler
 {
     /// <summary>
+    /// Factory for creating controller instances without additional reflection.
+    /// </summary>
+    private readonly ObjectFactory _controllerFactory;
+
+    /// <summary>
+    /// Precompiled delegate used to invoke the controller method.
+    /// </summary>
+    private readonly Func<object?, object?[], object?> _methodInvoker;
+
+    /// <summary>
+    /// Cached parameter metadata for the controller method.
+    /// </summary>
+    private readonly ParameterInfo[] _methodParams;
+
+    /// <summary>
+    /// Precalculated default parameter values.
+    /// </summary>
+    private readonly object?[] _defaultArgs;
+    
+    /// <summary>
     /// Represents a factory for creating service scopes, allowing for dependency injection and
     /// resolution of scoped services in the application. This is used to create an isolated service
     /// provider scope for handling requests, ensuring that dependencies with scoped lifetimes are properly managed.
     /// </summary>
     private readonly IServiceScopeFactory _scopeFactory;
-
-    /// <summary>
-    /// Represents the type of the controller that defines the method to be invoked for handling a specific endpoint.
-    /// This type is used to dynamically create an instance of the controller for the method invocation.
-    /// </summary>
-    private readonly Type _controllerType;
-
-    /// <summary>
-    /// Represents the specific method of a controller that will handle the incoming request.
-    /// This method is dynamically invoked during request processing,
-    /// based on the runtime configuration of the associated endpoint.
-    /// </summary>
-    private readonly MethodInfo _controllerMethod;
 
     /// <summary>
     /// Represents a handler for processing endpoint requests by mapping them to specific controller methods.
@@ -43,8 +50,15 @@ public class EndpointHandler
     public EndpointHandler(IServiceScopeFactory scopeFactory, Type controllerType, MethodInfo controllerMethod)
     {
         _scopeFactory = scopeFactory;
-        _controllerType = controllerType;
-        _controllerMethod = controllerMethod;
+        _controllerFactory = ActivatorUtilities.CreateFactory(controllerType, Type.EmptyTypes);
+        _methodParams = controllerMethod.GetParameters();
+        _defaultArgs = new object?[_methodParams.Length];
+        for (int i = 0; i < _methodParams.Length; i++)
+        {
+            var p = _methodParams[i];
+            _defaultArgs[i] = p.HasDefaultValue ? p.DefaultValue : GetDefault(p.ParameterType);
+        }
+        _methodInvoker = CreateMethodInvoker(controllerMethod);
     }
 
     /// <summary>
@@ -58,25 +72,24 @@ public class EndpointHandler
     {
         using var scope = _scopeFactory.CreateScope();
         var sp = scope.ServiceProvider;
-        var controller = ActivatorUtilities.CreateInstance(sp, _controllerType);
-        
-        var methodParams = _controllerMethod.GetParameters();
-        var args = new object?[methodParams.Length];
+        var controller = _controllerFactory(sp, null);
 
-        for (int i = 0; i < methodParams.Length; i++)
+        var args = new object?[_methodParams.Length];
+
+        for (int i = 0; i < _methodParams.Length; i++)
         {
-            var param = methodParams[i];
+            var param = _methodParams[i];
             if (ctx.Params != null && ctx.Params.Arguments != null && ctx.Params.Arguments.TryGetValue(param.Name!, out var json))
             {
                 args[i] = json.Deserialize(param.ParameterType);
             }
             else
             {
-                args[i] = param.HasDefaultValue ? param.DefaultValue : GetDefault(param.ParameterType);
+                args[i] = _defaultArgs[i];
             }
         }
         
-        var result = _controllerMethod.Invoke(controller, args);
+        var result = _methodInvoker(controller, args);
         if (result is Task task)
         {
             task.GetAwaiter().GetResult();
@@ -91,6 +104,33 @@ public class EndpointHandler
         }
 
         return result;
+    }
+    /// <summary>
+    /// Builds a delegate that invokes the specified method with an object target and argument array.
+    /// </summary>
+    /// <param name="method">The method to create an invoker for.</param>
+    /// <returns>A delegate that invokes the method without reflection.</returns>
+    private static Func<object?, object?[], object?> CreateMethodInvoker(MethodInfo method)
+    {
+        var targetParam = Expression.Parameter(typeof(object), "target");
+        var argsParam = Expression.Parameter(typeof(object[]), "args");
+
+        var paramInfos = method.GetParameters();
+        var argExpressions = new Expression[paramInfos.Length];
+        for (int i = 0; i < paramInfos.Length; i++)
+        {
+            var indexExpr = Expression.ArrayIndex(argsParam, Expression.Constant(i));
+            var converted = Expression.Convert(indexExpr, paramInfos[i].ParameterType);
+            argExpressions[i] = converted;
+        }
+
+        Expression? instanceExpr = method.IsStatic ? null : Expression.Convert(targetParam, method.DeclaringType!);
+        var callExpr = Expression.Call(instanceExpr, method, argExpressions);
+        Expression body = method.ReturnType == typeof(void)
+            ? Expression.Block(callExpr, Expression.Constant(null))
+            : Expression.Convert(callExpr, typeof(object));
+
+        return Expression.Lambda<Func<object?, object?[], object?>>(body, targetParam, argsParam).Compile();
     }
 
     /// <summary>

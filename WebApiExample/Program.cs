@@ -20,7 +20,6 @@ builder.Services.AddMcpEndpointsServer(opts =>
         AppContext.BaseDirectory,
         $"{Assembly.GetExecutingAssembly().GetName().Name}.xml"
     );
-    opts.HostUrl = "http://localhost:5258";
 });
 
 
